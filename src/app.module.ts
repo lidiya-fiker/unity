@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from './data-source';
-import { AccountModule } from './account/account.module';
+import { UserModule } from './shared/user.module';
+import { ClientModule } from './client/client.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions), AccountModule],
+  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, ClientModule],
   controllers: [],
   providers: [],
 })

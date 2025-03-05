@@ -1,5 +1,6 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { Account } from './account/entities/account.entity';
+import { User } from './shared/entites/user.entity';
+import { Client } from './client/entities/client.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -7,10 +8,10 @@ export const dataSourceOptions: DataSourceOptions = {
   port: 5433,
   username: 'postgres',
   password: 'kidiya',
-  database: 'unity',
+  database: 'unityConsultancy',
   synchronize: true,
   logging: true,
-  entities: [Account],
+  entities: [User, Client],
   migrations: [],
 };
 

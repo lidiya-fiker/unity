@@ -1,0 +1,19 @@
+### Create a new user
+POST http://localhost:3000/client/signup
+Content-Type: application/json
+
+{   "firstName":"lidiya",
+    "lastName":"fiker",
+    "email": "test6779@gmail.com",
+    "password": "tes",
+    "gender":"female"
+}
+
+### Sign in as an existing user 
+POST http://localhost:3000/client/signin
+Content-Type: application/json
+
+{
+    "email": "test2@gmail.com",
+    "password": "test"
+}
