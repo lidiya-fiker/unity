@@ -2,14 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  TableInheritance,
-  OneToMany,
 } from 'typeorm';
 import { AccountStatusEnum } from '../enums/account-status.enum';
-import { AccountVerification } from 'src/client/entities/account-verification.entity';
+
 
 @Entity()
-@TableInheritance({ column: { type: 'varchar', name: 'role' } })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -42,13 +39,13 @@ export class User {
   })
   status: string;
 
-  @OneToMany(
-    () => AccountVerification,
-    (accountVerification) => accountVerification.client,
-    {
-      cascade: true,
-      onDelete: 'CASCADE',
-    },
-  )
-  accountVerifications: AccountVerification[];
+  // @OneToMany(
+  //   () => AccountVerification,
+  //   (accountVerification) => accountVerification.client,
+  //   {
+  //     cascade: true,
+  //     onDelete: 'CASCADE',
+  //   },
+  // )
+  // accountVerifications: AccountVerification[];
 }

@@ -1,24 +1,24 @@
-import { MailerService } from '@nestjs-modules/mailer';
+// import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { Resend } from 'resend';
 require('dotenv').config();
 
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) {}
+  // constructor(private readonly mailerService: MailerService) {}
 
-  public async sendEmail(email: string, subject: string, body: string) {
-    try {
-      // const result = await this.mailerService.sendMail({
-      //   to: email,
-      //   subject: subject,
-      //   html: body,
-      // });
-      // return result;
-    } catch (error) {
-      throw error;
-    }
-  }
+  // // public async sendEmail(email: string, subject: string, body: string) {
+  // //   try {
+  // //     // const result = await this.mailerService.sendMail({
+  // //     //   to: email,
+  // //     //   subject: subject,
+  // //     //   html: body,
+  // //     // });
+  // //     // return result;
+  // //   } catch (error) {
+  // //     throw error;
+  // //   }
+  // // }
 
   async sendEmailWithResend(to: string, subject: string, html: string) {
     try {

@@ -17,8 +17,5 @@ export class ClientController {
     return this.clientService.login(loginDto);
   }
 
-  // @Post('verify')
-  // verifyAccount(@Body() verifyAccountDto: VerifyAccountDto) {
-  //   return this.clientService.verifyAccount(verifyAccountDto);
-  // }
+
 }

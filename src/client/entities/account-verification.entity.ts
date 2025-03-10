@@ -5,12 +5,13 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Client } from 'src/client/entities/client.entity';
 import {
   AccountVerificationStatusEnum,
   AccountVerificationTypeEnum,
 } from '../../shared/enums';
-import { Audit } from 'src/shared/entites/audit.entity';
+import { Audit } from 'src/shared/entities/audit.entity';
+
+import { Client } from '../../client/entities/client.entity';
 @Entity('account_verifications')
 export class AccountVerification extends Audit {
   @PrimaryGeneratedColumn('uuid')
@@ -33,7 +34,7 @@ export class AccountVerification extends Audit {
   })
   public otpType: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'uuid' })
   public clientId: string;
 
   @ManyToOne(() => Client, (client) => client.accountVerifications)

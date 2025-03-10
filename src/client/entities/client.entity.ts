@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
-import { User } from '../../shared/entites/user.entity';
+import { Entity, Column, OneToMany } from 'typeorm';
+import { User } from '../../shared/entities/user.entity';
+import { AccountVerification } from './account-verification.entity';
 
 @Entity()
 export class Client extends User {
@@ -12,4 +13,13 @@ export class Client extends User {
   @Column({ nullable: true })
   maritalStatus?: string;
 
+  @OneToMany(
+    () => AccountVerification,
+    (accountVerification) => accountVerification.client,
+    {
+      cascade: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  accountVerifications: AccountVerification[];
 }
