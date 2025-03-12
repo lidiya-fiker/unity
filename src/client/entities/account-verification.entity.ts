@@ -36,10 +36,12 @@ export class AccountVerification extends Audit {
 
   @Column({ type: 'uuid' })
   public clientId: string;
+  
 
   @ManyToOne(() => Client, (client) => client.accountVerifications)
   @JoinColumn({ name: 'clientId' })
   public client: Client;
+
 
   @Column({ type: 'text', nullable: true })
   public userId: string;

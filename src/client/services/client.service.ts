@@ -82,11 +82,7 @@ export class ClientService {
       body = `Link: ${accountVerification.otp}`;
     }
 
-    await this.emailService.sendEmailWithResend(
-      client.email,
-      'Email Verification',
-      body,
-    );
+    await this.emailService.sendEmail(client.email, 'Email Verification', body);
 
     return accountVerification.id;
   }
