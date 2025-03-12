@@ -2,11 +2,12 @@
 POST http://localhost:3000/client/signup
 Content-Type: application/json
 
-{   "firstName":"lidiya",
+{   "firstName":"nati",
     "lastName":"fiker",
-    "email": "mahdersolomon963@gmail.com",
-    "password": "tes",
-    "gender":"female"
+    "username":"nati",
+    "email": "natnaelfiker226@gmail.com",
+    "password": "testpassword",
+    "gender":"man"
 
 }
 

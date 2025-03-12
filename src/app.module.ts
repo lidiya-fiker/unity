@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
     TypeOrmModule.forRoot(dataSourceOptions),
     UserModule,
     ClientModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [],
   providers: [],
