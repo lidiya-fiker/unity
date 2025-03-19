@@ -2,13 +2,23 @@
 POST http://localhost:3000/client/signup
 Content-Type: application/json
 
-{   "firstName":"nati",
-    "lastName":"fiker",
-    "username":"nati",
-    "email": "natnaelfiker226@gmail.com",
-    "password": "testpassword",
-    "gender":"man"
+{   "firstName":"new",
+    "lastName":"newnew",
+    "username":"new",
+    "email": "asasasawewe1@gmail.com",
+    "password": "newtest",
+    "gender":"femail"
 
+}
+
+###  verifiy account
+POST http://localhost:3000/client/verifyAccount
+Content-Type: application/json
+
+{
+  "verificationId": "235e1293-56ce-4009-bbdc-490e6bca406f",
+  "otp": "872723",
+  "isOtp": true
 }
 
 ### Sign in as an existing user 
@@ -16,6 +26,6 @@ POST http://localhost:3000/client/signin
 Content-Type: application/json
 
 {
-    "email": "test123@gmail.com",
-    "password": "test"
+    "email": "asasasawewe1@gmail.com",
+    "password": "newtest"
 }

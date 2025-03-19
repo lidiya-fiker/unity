@@ -3,7 +3,6 @@ import { CreateClientDto, VerifyAccountDto } from '../dto/createClient.dto';
 import { LoginDto } from '../../shared/dtos/login.dto';
 import { ClientService } from '../services/client.service';
 
-
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
@@ -18,11 +17,17 @@ export class ClientController {
     }
   }
 
+  @Post('verifyAccount')
+  async verifyAccount(@Body() verifyAccountDto: VerifyAccountDto) {
+    return  this.clientService.verifyAccount(verifyAccountDto);
+    
+  }
+
   @Post('/signin')
   async login(@Body() loginDto: LoginDto) {
     try {
-      const user = await this.clientService.login(loginDto);
-      return { success: true, user };
+      const token = await this.clientService.login(loginDto);
+      return { success: true, token };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

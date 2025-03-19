@@ -5,7 +5,8 @@ import { ClientController } from './controllers/client.controller';
 import { ClientService } from './services/client.service';
 import { UserModule } from 'src/shared/user.module';
 import { AccountVerification } from './entities/account-verification.entity';
-import { EmailService } from 'src/shared/email/email.service';
+import { AuthHelper } from 'src/shared/helper/auth.helper';
+
 
 @Module({
   imports: [TypeOrmModule.forFeature([Client,AccountVerification]), UserModule],

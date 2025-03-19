@@ -1,6 +1,11 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+
+} from '@nestjs/common';
 import { randomBytes, scrypt as _scrypt, randomInt } from 'crypto';
 import { promisify } from 'util';
 import { Client } from '../entities/client.entity';
@@ -13,6 +18,9 @@ import { AccountVerificationStatusEnum } from 'src/shared/enums';
 
 import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/shared/email/email.service';
+import { AuthHelper } from 'src/shared/helper/auth.helper';
+import { LoginResponseDto } from '../dto/login.dto';
+import { User } from 'src/shared/entities/user.entity';
 
 const scrypt = promisify(_scrypt);
 
@@ -22,6 +30,7 @@ export class ClientService {
     @InjectRepository(AccountVerification)
     private readonly accountVerificationRepository: Repository<AccountVerification>,
     private readonly emailService: EmailService,
+    private readonly helper: AuthHelper,
   ) {}
 
   public async createAccount(
@@ -65,7 +74,7 @@ export class ClientService {
     );
 
     const fullName = `${client.firstName} ${client.lastName}`;
-    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 10);
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 20);
 
     let body: string;
 
@@ -109,6 +118,87 @@ export class ClientService {
     return client;
   }
 
+  public async verifyAccount(body: VerifyAccountDto) {
+    const { verificationId, otp, isOtp }: VerifyAccountDto = body;
+    const account = await this.verifyOTP(verificationId, otp, isOtp);
+
+    account.status = AccountStatusEnum.ACTIVE;
+
+    await this.repository.update(account.id, account);
+
+    const tokenPayload = {
+      id: account.id,
+      email: account.email,
+    };
+
+
+    const token: LoginResponseDto = {
+      access_token: this.helper.generateAccessToken(tokenPayload),
+      refresh_token: this.helper.generateRefreshToken({
+        id: account.id,
+      }),
+    };
+    console.log(
+      'JWT_ACCESS_TOKEN_EXPIRES:',
+      process.env.JWT_ACCESS_TOKEN_EXPIRES,
+    );
+
+    return token;
+  }
+
+  private async verifyOTP(
+    verificationId: string,
+    otp: string,
+    isOtp: boolean,
+    invalidateOtp = true,
+  ) {
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 10);
+
+    const accountVerification =
+      await this.accountVerificationRepository.findOneBy({
+        id: verificationId,
+        status: AccountVerificationStatusEnum.NEW,
+      });
+    if (!accountVerification) {
+      throw new HttpException(
+        'verification_token_not_found',
+        HttpStatus.NOT_FOUND,
+      );
+    } else if (
+      isOtp &&
+      !this.helper.compareHashedValue(otp, accountVerification.otp)
+    ) {
+      throw new HttpException(
+        'invalid_verification_token',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (!isOtp && accountVerification.otp != otp) {
+      throw new HttpException(
+        'invalid_verification_token',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (
+      accountVerification.createdAt.getMinutes() + OTP_LIFE_TIME <
+      new Date().getMinutes()
+    ) {
+      await this.accountVerificationRepository.update(accountVerification.id, {
+        status: AccountVerificationStatusEnum.EXPIRED,
+      });
+      throw new HttpException(
+        'verification_token_expired',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const account = await this.repository.findOneBy({
+      id: accountVerification.clientId,
+    });
+    if (!account) {
+      throw new HttpException('account_not_found', HttpStatus.NOT_FOUND);
+    }
+    return account;
+  }
+
   async login(loginDto: LoginDto) {
     const { email, password, username } = loginDto;
 
@@ -116,14 +206,14 @@ export class ClientService {
       throw new BadRequestException('Either email or phone number is required');
     }
 
-    const user = await this.repository.findOne({
+    const user: User = await this.repository.findOne({
       where: [email ? { email } : null, username ? { username } : null].filter(
         Boolean,
       ),
     });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!user || user.status != AccountStatusEnum.ACTIVE) {
+      throw new HttpException('somethin_went_wrong', HttpStatus.BAD_REQUEST);
     }
 
     const [salt, storedHash] = user.password.split('.');
@@ -132,7 +222,19 @@ export class ClientService {
     if (storedHash !== hash.toString('hex')) {
       throw new BadRequestException('bad password');
     }
-    return user;
+
+    const tokenPayload = {
+      id: user.id,
+      email: user.email,
+    };
+
+    const token: LoginResponseDto = {
+      access_token: this.helper.generateAccessToken(tokenPayload),
+      refresh_token: this.helper.generateRefreshToken({
+        id: user.id,
+      }),
+    };
+    return token;
   }
 
   private async createOTP(

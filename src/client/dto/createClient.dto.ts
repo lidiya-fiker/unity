@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { CreateUserDto } from '../../shared/dtos/user.dto';
 
 export class CreateClientDto extends CreateUserDto {
@@ -9,9 +9,12 @@ export class CreateClientDto extends CreateUserDto {
 }
 
 export class VerifyAccountDto {
+  @IsString()
   public verificationId: string;
-
+  
+  @IsString()
   public otp: string;
 
+  @IsBoolean()
   public isOtp: boolean;
 }
