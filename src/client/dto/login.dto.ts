@@ -5,4 +5,15 @@ export class LoginResponseDto {
   public refresh_token?: string;
 }
 
+export class ResetPasswordDto {
+  @IsNotEmpty()
+  public verificationId: string;
 
+  @IsString()
+  public otp: string;
+
+  @IsNotEmpty()
+  public password: string;
+
+  public isOtp: boolean;
+}

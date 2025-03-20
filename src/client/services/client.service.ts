@@ -1,11 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-
-} from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { randomBytes, scrypt as _scrypt, randomInt } from 'crypto';
 import { promisify } from 'util';
 import { Client } from '../entities/client.entity';
@@ -19,7 +14,7 @@ import { AccountVerificationStatusEnum } from 'src/shared/enums';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/shared/email/email.service';
 import { AuthHelper } from 'src/shared/helper/auth.helper';
-import { LoginResponseDto } from '../dto/login.dto';
+import { LoginResponseDto, ResetPasswordDto } from '../dto/login.dto';
 import { User } from 'src/shared/entities/user.entity';
 
 const scrypt = promisify(_scrypt);
@@ -65,6 +60,54 @@ export class ClientService {
     }
 
     throw new BadRequestException('conflict');
+  }
+
+  public async forgetPassword(email: string) {
+    email = email.toLocaleLowerCase();
+
+    const account: Client = await this.repository.findOneBy({ email });
+    if (!account || account.status != AccountStatusEnum.ACTIVE) {
+      throw new HttpException('something_went_wrong', HttpStatus.BAD_REQUEST);
+    }
+
+    const verificationId = await this.createAndSendForgetOTP(account);
+    return { verificationId };
+  }
+
+  public async verifyForgetPassword(body: VerifyAccountDto) {
+    const { verificationId, otp, isOtp }: VerifyAccountDto = body;
+    await this.verifyOTP(verificationId, otp, isOtp, false);
+    return {
+      status: true,
+    };
+  }
+
+  // public async resetPassword(resetPassword: ResetPasswordDto) {
+  //   const { verificationId, otp, password, isOtp }: ResetPasswordDto =
+  //     resetPassword;
+
+  //   const verifyOTP = await this.verifyOTP(verificationId, otp, isOtp);
+  // }
+
+  public async createAndSendForgetOTP(account: Client) {
+    const { accountVerification, otp } = await this.createOTP(
+      account,
+      AccountVerificationTypeEnum.RESET_PASSWORD,
+    );
+
+    const VERIFICATION_METHOD = process.env.VERIFICATION_METHOD ?? 'OTP';
+
+    let body: string;
+
+    if (VERIFICATION_METHOD == 'OTP') {
+      body = `OTP:${otp}`;
+    } else {
+      body = `Link: ${accountVerification.otp}`;
+    }
+
+    await this.emailService.sendEmail(account.email, 'Reset Password', body);
+
+    return accountVerification.id;
   }
 
   private async createAndSendVerificationOTP(client: Client) {
@@ -130,7 +173,6 @@ export class ClientService {
       id: account.id,
       email: account.email,
     };
-
 
     const token: LoginResponseDto = {
       access_token: this.helper.generateAccessToken(tokenPayload),
