@@ -34,4 +34,10 @@ export class AuthHelper {
       },
     );
   }
+
+  // Encode User's password
+  public encodePassword(password: string): string {
+    const salt: string = bcrypt.genSaltSync(12);
+    return bcrypt.hashSync(password, salt);
+  }
 }

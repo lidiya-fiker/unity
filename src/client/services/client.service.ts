@@ -82,12 +82,45 @@ export class ClientService {
     };
   }
 
-  // public async resetPassword(resetPassword: ResetPasswordDto) {
-  //   const { verificationId, otp, password, isOtp }: ResetPasswordDto =
-  //     resetPassword;
+  public async resetPassword(resetPassword: ResetPasswordDto) {
+    const { verificationId, otp, password, isOtp }: ResetPasswordDto =
+      resetPassword;
 
-  //   const verifyOTP = await this.verifyOTP(verificationId, otp, isOtp);
-  // }
+    const verifyOTP = await this.verifyOTP(verificationId, otp, isOtp);
+
+    const account = await this.accountVerificationRepository.findOneBy({
+      clientId: verifyOTP.id,
+    });
+
+    account.client.password = this.helper.encodePassword(password);
+    await this.accountVerificationRepository.upsert(account, ['clientId']);
+    return account.client;
+  }
+
+  public async setPassword(resetPassword: ResetPasswordDto) {
+    const { verificationId, otp, password, isOtp }: ResetPasswordDto =
+      resetPassword;
+
+    // Verify OTP
+    const account = await this.verifyOTP(verificationId, otp, isOtp);
+    if (!account) {
+      throw new BadRequestException('Invalid verification details.');
+    }
+
+    // Hash new password
+    const hashedPassword = this.helper.encodePassword(password);
+
+    // Update password
+    await this.repository.update(account.id, { password: hashedPassword });
+
+    // Invalidate the OTP
+    await this.accountVerificationRepository.update(
+      { clientId: account.id, id: verificationId },
+      { status: AccountVerificationStatusEnum.USED },
+    );
+
+    return { message: 'Password reset successful' };
+  }
 
   public async createAndSendForgetOTP(account: Client) {
     const { accountVerification, otp } = await this.createOTP(
@@ -145,11 +178,7 @@ export class ClientService {
   ) {
     const { password } = createClientDto;
 
-    const salt = randomBytes(8).toString('hex');
-
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
-
-    const hashedPassword = salt + '.' + hash.toString('hex');
+    const hashedPassword = this.helper.encodePassword(password);
 
     const client = this.repository.create({
       ...createClientDto,

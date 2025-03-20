@@ -16,8 +16,8 @@ POST http://localhost:3000/client/verifyAccount
 Content-Type: application/json
 
 {
-  "verificationId": "235e1293-56ce-4009-bbdc-490e6bca406f",
-  "otp": "872723",
+  "verificationId": "",
+  "otp": "",
   "isOtp": true
 }
 
@@ -29,3 +29,51 @@ Content-Type: application/json
     "email": "asasasawewe1@gmail.com",
     "password": "newtest"
 }
+
+
+
+### Sign in as an existing user 
+POST http://localhost:3000/client/forget-password
+Content-Type: application/json
+
+{
+    "email": "asasasawewe1@gmail.com",
+}
+
+
+###  verifiy account
+POST http://localhost:3000/client/verify-forget-password
+Content-Type: application/json
+
+{
+  "verificationId": "",
+  "otp": "",
+  "isOtp": true
+}
+
+
+###  verifiy account
+POST http://localhost:3000/client/reset-password
+Content-Type: application/json
+
+{
+  "verificationId": "",
+  "otp": "",
+  "password":"",
+  "isOtp": true
+}
+
+
+###  verifiy account
+POST http://localhost:3000/client/set-password
+Content-Type: application/json
+
+{
+  "verificationId": "",
+  "otp": "",
+  "password":"",
+  "isOtp": true
+}
+
+
+
