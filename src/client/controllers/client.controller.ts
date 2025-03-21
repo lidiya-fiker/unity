@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { CreateClientDto, VerifyAccountDto } from '../dto/createClient.dto';
 import { LoginDto } from '../../shared/dtos/login.dto';
 import { ClientService } from '../services/client.service';
-import { ResetPasswordDto } from '../dto/login.dto';
+import { ResendOtpDto, ResetPasswordDto } from '../dto/login.dto';
 
 @Controller('client')
 export class ClientController {
@@ -18,6 +18,10 @@ export class ClientController {
     }
   }
 
+  @Post('resend-otp')
+  async resendOtp(@Body() payload: ResendOtpDto) {
+    return this.clientService.resendOtp(payload);
+  }
   @Post('verifyAccount')
   async verifyAccount(@Body() verifyAccountDto: VerifyAccountDto) {
     return this.clientService.verifyAccount(verifyAccountDto);

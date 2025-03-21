@@ -17,3 +17,8 @@ export class ResetPasswordDto {
 
   public isOtp: boolean;
 }
+
+export class ResendOtpDto {
+  @IsString()
+  public verificationId: string;
+}

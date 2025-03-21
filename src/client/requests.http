@@ -21,6 +21,16 @@ Content-Type: application/json
   "isOtp": true
 }
 
+
+###  resend otp
+POST http://localhost:3000/client/resend-otp
+Content-Type: application/json
+
+{
+  "verificationId": "",
+}
+
+
 ### Sign in as an existing user 
 POST http://localhost:3000/client/signin
 Content-Type: application/json

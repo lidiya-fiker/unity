@@ -14,7 +14,11 @@ import { AccountVerificationStatusEnum } from 'src/shared/enums';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/shared/email/email.service';
 import { AuthHelper } from 'src/shared/helper/auth.helper';
-import { LoginResponseDto, ResetPasswordDto } from '../dto/login.dto';
+import {
+  LoginResponseDto,
+  ResendOtpDto,
+  ResetPasswordDto,
+} from '../dto/login.dto';
 import { User } from 'src/shared/entities/user.entity';
 
 const scrypt = promisify(_scrypt);
@@ -170,6 +174,44 @@ export class ClientService {
     await this.emailService.sendEmail(client.email, 'Email Verification', body);
 
     return accountVerification.id;
+  }
+
+  async resendOtp(payload: ResendOtpDto) {
+    const invitation = await this.accountVerificationRepository.findOne({
+      where: {
+        id: payload.verificationId,
+      },
+      relations: {
+        client: true,
+      },
+    });
+
+    if (!invitation) {
+      throw new HttpException('verirication_not_found', HttpStatus.NOT_FOUND);
+    }
+
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 20);
+    if (invitation.status == AccountVerificationStatusEnum.USED) {
+      throw new HttpException(
+        'verification_already_used',
+        HttpStatus.NOT_FOUND,
+      );
+    } else if (
+      invitation.createdAt.getMinutes() + OTP_LIFE_TIME >
+      new Date().getMinutes()
+    ) {
+      return;
+    }
+
+    await this.accountVerificationRepository.update(invitation.id, {
+      status: AccountVerificationStatusEnum.EXPIRED,
+    });
+
+    const verificationId = await this.createAndSendVerificationOTP(
+      invitation.client,
+    );
+
+    return { verificationId };
   }
 
   private async createNewAccount(
