@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class LoginResponseDto {
   public access_token: string;
@@ -15,7 +15,8 @@ export class ResetPasswordDto {
   @IsNotEmpty()
   public password: string;
 
-  public isOtp: boolean;
+  @IsOptional()
+  public isOtp?: boolean;
 }
 
 export class ResendOtpDto {

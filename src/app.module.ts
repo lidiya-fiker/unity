@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './shared/user.module';
 import { ClientModule } from './client/client.module';
 import { ConfigModule } from '@nestjs/config';
+import { GoogleStrategy } from './google.strategy';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { ConfigModule } from '@nestjs/config';
     ClientModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [GoogleStrategy],
 })
 export class AppModule {}

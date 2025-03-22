@@ -90,11 +90,26 @@ export class ClientService {
     const { verificationId, otp, password, isOtp }: ResetPasswordDto =
       resetPassword;
 
-    const verifyOTP = await this.verifyOTP(verificationId, otp, isOtp);
+    const VerifyOtp = await this.verifyOTP(verificationId, otp, isOtp);
 
-    const account = await this.accountVerificationRepository.findOneBy({
-      clientId: verifyOTP.id,
+    if (!VerifyOtp) {
+      throw new BadRequestException('Invalid OTP or verification details.');
+    }
+
+    const account = await this.accountVerificationRepository.findOne({
+      where: { clientId: VerifyOtp.id },
+      relations: ['client'],
     });
+
+    if (!account) {
+      throw new BadRequestException(
+        'No account found for the provided clientId.',
+      );
+    }
+
+    if (!account.client) {
+      throw new BadRequestException('Account is not linked to any client.');
+    }
 
     account.client.password = this.helper.encodePassword(password);
     await this.accountVerificationRepository.upsert(account, ['clientId']);
@@ -328,11 +343,8 @@ export class ClientService {
     if (!user || user.status != AccountStatusEnum.ACTIVE) {
       throw new HttpException('somethin_went_wrong', HttpStatus.BAD_REQUEST);
     }
-
-    const [salt, storedHash] = user.password.split('.');
-
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
-    if (storedHash !== hash.toString('hex')) {
+    // Use bcrypt for password comparison
+    if (!bcrypt.compareSync(password, user.password)) {
       throw new BadRequestException('bad password');
     }
 

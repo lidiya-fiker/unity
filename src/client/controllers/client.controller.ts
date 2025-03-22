@@ -38,8 +38,8 @@ export class ClientController {
   }
 
   @Post('forget-password')
-  async forgetPassword(email: string) {
-    return this.clientService.forgetPassword(email);
+  async forgetPassword(@Body() body: { email: string }) {
+    return this.clientService.forgetPassword(body.email);
   }
 
   @Post('verify-forget-password')
