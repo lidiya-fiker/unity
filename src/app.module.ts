@@ -6,6 +6,7 @@ import { UserModule } from './shared/user.module';
 import { ClientModule } from './client/client.module';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleStrategy } from './google.strategy';
+import { AuthService } from './client/services/auth.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { GoogleStrategy } from './google.strategy';
     ClientModule,
   ],
   controllers: [],
-  providers: [GoogleStrategy],
+  providers: [GoogleStrategy, AuthService],
 })
 export class AppModule {}

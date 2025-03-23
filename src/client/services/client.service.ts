@@ -59,7 +59,7 @@ export class ClientService {
     } else if (client.status == AccountStatusEnum.PENDING) {
       const verificationId = await this.createAndSendVerificationOTP(client);
       return { verificationId };
-    } else if (client.email === createClientDto.email.toLocaleLowerCase()) {
+    } else if (client.email === createClientDto.email?.toLocaleLowerCase()) {
       throw new BadRequestException('email_already_exists');
     }
 
