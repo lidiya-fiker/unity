@@ -255,23 +255,7 @@ export class ClientService {
 
     await this.repository.update(account.id, account);
 
-    const tokenPayload = {
-      id: account.id,
-      email: account.email,
-    };
-
-    const token: LoginResponseDto = {
-      access_token: this.helper.generateAccessToken(tokenPayload),
-      refresh_token: this.helper.generateRefreshToken({
-        id: account.id,
-      }),
-    };
-    console.log(
-      'JWT_ACCESS_TOKEN_EXPIRES:',
-      process.env.JWT_ACCESS_TOKEN_EXPIRES,
-    );
-
-    return token;
+    return { message: 'Account successfully verified and activated.' };
   }
 
   private async verifyOTP(
@@ -343,6 +327,7 @@ export class ClientService {
     if (!user || user.status != AccountStatusEnum.ACTIVE) {
       throw new HttpException('somethin_went_wrong', HttpStatus.BAD_REQUEST);
     }
+
     // Use bcrypt for password comparison
     if (!bcrypt.compareSync(password, user.password)) {
       throw new BadRequestException('bad password');
