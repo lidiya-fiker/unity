@@ -302,6 +302,10 @@ export class ClientService {
       );
     }
 
+    await this.accountVerificationRepository.update(accountVerification.id, {
+      status: AccountVerificationStatusEnum.USED,
+    });
+
     const account = await this.repository.findOneBy({
       id: accountVerification.clientId,
     });
