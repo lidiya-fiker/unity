@@ -42,18 +42,15 @@ export class ClientController {
     return this.clientService.forgetPassword(body.email);
   }
 
-  @Post('verify-forget-password')
-  async verifyForgetPassword(@Body() verifyAccountDto: VerifyAccountDto) {
-    return this.clientService.verifyForgetPassword(verifyAccountDto);
-  }
+  // @Post('verify-forget-password')
+  // async verifyForgetPassword(@Body() verifyAccountDto: VerifyAccountDto) {
+  //   return this.clientService.verifyForgetPassword(verifyAccountDto);
+  // }
 
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.clientService.resetPassword(resetPasswordDto);
   }
 
-  @Post('set-password')
-  async setPassword(@Body() setPasswordDto: ResetPasswordDto) {
-    return this.clientService.setPassword(setPasswordDto);
-  }
+
 }

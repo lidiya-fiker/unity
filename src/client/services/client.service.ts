@@ -78,63 +78,50 @@ export class ClientService {
     return { verificationId };
   }
 
-  public async verifyForgetPassword(body: VerifyAccountDto) {
-    const { verificationId, otp, isOtp }: VerifyAccountDto = body;
-    await this.verifyOTP(verificationId, otp, isOtp, false);
-    return {
-      status: true,
-    };
-  }
+  // public async verifyForgetPassword(body: VerifyAccountDto) {
+  //   const { verificationId, otp, isOtp }: VerifyAccountDto = body;
+  //   await this.verifyOTP(verificationId, otp, isOtp, false);
+  //   return {
+  //     status: true,
+  //   };
+  // }
 
-  public async resetPassword(resetPassword: ResetPasswordDto) {
-    const { verificationId, otp, password, isOtp }: ResetPasswordDto =
-      resetPassword;
-
-    const VerifyOtp = await this.verifyOTP(verificationId, otp, isOtp);
-
-    if (!VerifyOtp) {
-      throw new BadRequestException('Invalid OTP or verification details.');
-    }
-
-    const account = await this.accountVerificationRepository.findOne({
-      where: { clientId: VerifyOtp.id },
+  async resetPassword({ newPassword, token }: ResetPasswordDto) {
+    // 1️⃣ Find the verification entry
+    const verification = await this.accountVerificationRepository.findOne({
+      where: { otp: token },
       relations: ['client'],
     });
 
-    if (!account) {
-      throw new BadRequestException(
-        'No account found for the provided clientId.',
+    if (!verification) {
+      throw new HttpException(
+        'Invalid or expired token',
+        HttpStatus.BAD_REQUEST,
       );
     }
 
-    if (!account.client) {
-      throw new BadRequestException('Account is not linked to any client.');
+    if (verification.status === AccountVerificationStatusEnum.USED) {
+      throw new HttpException(
+        'This reset link has already been used',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    account.client.password = this.helper.encodePassword(password);
-    await this.accountVerificationRepository.upsert(account, ['clientId']);
-    return account.client;
-  }
-
-  public async setPassword(resetPassword: ResetPasswordDto) {
-    const { verificationId, otp, password, isOtp }: ResetPasswordDto =
-      resetPassword;
-
-    // Verify OTP
-    const account = await this.verifyOTP(verificationId, otp, isOtp);
-    if (!account) {
-      throw new BadRequestException('Invalid verification details.');
+    //  Find the user
+    const user = verification.client;
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    // Hash new password
-    const hashedPassword = this.helper.encodePassword(password);
+    user.password = this.helper.encodePassword(newPassword);
+    await this.repository.save(user);
 
-    // Update password
-    await this.repository.update(account.id, { password: hashedPassword });
+    // Invalidate the token
+    await this.accountVerificationRepository.delete(verification.id);
 
-    // Invalidate the OTP
+    // Invalidate the OTP after successful password reset
     await this.accountVerificationRepository.update(
-      { clientId: account.id, id: verificationId },
+      { id: verification.id },
       { status: AccountVerificationStatusEnum.USED },
     );
 
@@ -147,15 +134,15 @@ export class ClientService {
       AccountVerificationTypeEnum.RESET_PASSWORD,
     );
 
-    const VERIFICATION_METHOD = process.env.VERIFICATION_METHOD ?? 'OTP';
+    const VERIFICATION_METHOD = process.env.VERIFICATION_METHOD ?? 'LINK';
 
-    let body: string;
+    // Construct a clickable reset password link
+    const FRONTEND_BASE_URL =
+      process.env.FRONTEND_BASE_URL ?? 'http://localhost:3001';
 
-    if (VERIFICATION_METHOD == 'OTP') {
-      body = `OTP:${otp}`;
-    } else {
-      body = `Link: ${accountVerification.otp}`;
-    }
+    const resetLink = `${FRONTEND_BASE_URL}/reset-password?token=${accountVerification.otp}`;
+
+    const body = `Click the link to reset your password: <a href="${resetLink}">${resetLink}</a>`;
 
     await this.emailService.sendEmail(account.email, 'Reset Password', body);
 
@@ -169,7 +156,7 @@ export class ClientService {
     );
 
     const fullName = `${client.firstName} ${client.lastName}`;
-    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 20);
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 2);
 
     let body: string;
 
@@ -202,31 +189,39 @@ export class ClientService {
     });
 
     if (!invitation) {
-      throw new HttpException('verirication_not_found', HttpStatus.NOT_FOUND);
+      throw new HttpException('verification_not_found', HttpStatus.NOT_FOUND);
     }
 
-    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 20);
-    if (invitation.status == AccountVerificationStatusEnum.USED) {
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 2);
+    const otpLifetimeMs = OTP_LIFE_TIME * 60 * 1000;
+    const currentTime = new Date().getTime();
+    const invitationTime = invitation.createdAt.getTime();
+
+    // If OTP is still valid (not expired), return early.
+    if (currentTime - invitationTime < otpLifetimeMs) {
+      // Optionally, you can return a message saying the OTP is still valid.
+      return { message: 'OTP is still valid and has not expired yet.' };
+    }
+
+    // If the invitation status is USED, do not resend.
+    if (invitation.status === AccountVerificationStatusEnum.USED) {
       throw new HttpException(
         'verification_already_used',
         HttpStatus.NOT_FOUND,
       );
-    } else if (
-      invitation.createdAt.getMinutes() + OTP_LIFE_TIME >
-      new Date().getMinutes()
-    ) {
-      return;
     }
 
+    // Mark the current OTP as expired
     await this.accountVerificationRepository.update(invitation.id, {
       status: AccountVerificationStatusEnum.EXPIRED,
     });
 
-    const verificationId = await this.createAndSendVerificationOTP(
+    // Create and send a new OTP
+    const newVerificationId = await this.createAndSendVerificationOTP(
       invitation.client,
     );
 
-    return { verificationId };
+    return { verificationId: newVerificationId };
   }
 
   private async createNewAccount(
@@ -264,35 +259,34 @@ export class ClientService {
     isOtp: boolean,
     invalidateOtp = true,
   ) {
-    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 10);
+    const OTP_LIFE_TIME_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
 
     const accountVerification =
-      await this.accountVerificationRepository.findOneBy({
-        id: verificationId,
-        status: AccountVerificationStatusEnum.NEW,
+      await this.accountVerificationRepository.findOne({
+        where: {
+          id: verificationId,
+          status: AccountVerificationStatusEnum.NEW,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
       });
+    console.log('OTP retrieved for verification:', accountVerification?.otp);
+    console.log('OTP status:', accountVerification?.status);
+    console.log('OTP createdAt:', accountVerification?.createdAt);
+
     if (!accountVerification) {
       throw new HttpException(
         'verification_token_not_found',
         HttpStatus.NOT_FOUND,
       );
-    } else if (
-      isOtp &&
-      !this.helper.compareHashedValue(otp, accountVerification.otp)
-    ) {
-      throw new HttpException(
-        'invalid_verification_token',
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (!isOtp && accountVerification.otp != otp) {
-      throw new HttpException(
-        'invalid_verification_token',
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (
-      accountVerification.createdAt.getMinutes() + OTP_LIFE_TIME <
-      new Date().getMinutes()
-    ) {
+    }
+
+    // Check if OTP has expired
+    const currentTime = new Date().getTime();
+    const createdTime = accountVerification.createdAt.getTime();
+
+    if (currentTime - createdTime > OTP_LIFE_TIME_MS) {
       await this.accountVerificationRepository.update(accountVerification.id, {
         status: AccountVerificationStatusEnum.EXPIRED,
       });
@@ -302,9 +296,28 @@ export class ClientService {
       );
     }
 
-    await this.accountVerificationRepository.update(accountVerification.id, {
-      status: AccountVerificationStatusEnum.USED,
-    });
+    // Check OTP validity
+    if (
+      isOtp &&
+      !this.helper.compareHashedValue(otp, accountVerification.otp)
+    ) {
+      throw new HttpException(
+        'invalid_verification_token',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (!isOtp && accountVerification.otp !== otp) {
+      throw new HttpException(
+        'invalid_verification_token',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Invalidate OTP after successful verification
+    if (invalidateOtp) {
+      await this.accountVerificationRepository.update(accountVerification.id, {
+        status: AccountVerificationStatusEnum.USED,
+      });
+    }
 
     const account = await this.repository.findOneBy({
       id: accountVerification.clientId,
@@ -378,8 +391,8 @@ export class ClientService {
     accountVerification.otp = this.encodePassword(otp);
     accountVerification.otpType = otpType;
     accountVerification.userId = userId;
-
-    await this.accountVerificationRepository.save(accountVerification);
+    (accountVerification.createdAt = new Date()),
+      await this.accountVerificationRepository.save(accountVerification);
     return { accountVerification, otp };
   }
 

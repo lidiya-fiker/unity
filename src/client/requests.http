@@ -2,12 +2,12 @@
 POST http://localhost:3000/client/signup
 Content-Type: application/json
 
-{   "firstName":"new",
-    "lastName":"newnew",
-    "username":"new",
+{   "firstName":"nati",
+    "lastName":"fiker",
+    "username":"nati",
     "email": "asasasawewe1@gmail.com",
-    "password": "newtest",
-    "gender":"femail"
+    "password": "natnael",
+    "gender":"mail"
 
 }
 
@@ -16,7 +16,7 @@ POST http://localhost:3000/client/verifyAccount
 Content-Type: application/json
 
 {
-  "verificationId": "fd394938-22f1-468b-82c7-35971b5ce07f",
+  "verificationId": "7b4e9789-3f0a-45cc-8480-f47ad3fc1af4",
   "otp": "112144",
   "isOtp": true
 }
@@ -27,7 +27,8 @@ POST http://localhost:3000/client/resend-otp
 Content-Type: application/json
 
 {
-  "verificationId": "",
+
+  "verificationId": "7b4e9789-3f0a-45cc-8480-f47ad3fc1af4"
 }
 
 
@@ -52,15 +53,15 @@ Content-Type: application/json
 
 
 
-###  verifiy account
-POST http://localhost:3000/client/verify-forget-password
-Content-Type: application/json
+# ###  verifiy forgetpassword otp
+# POST http://localhost:3000/client/verify-forget-password
+# Content-Type: application/json
 
-{
-   "verificationId": "fd162124-5db0-4c4e-9ad5-715638d6594c",
-  "otp": "801066",
-  "isOtp": true
-}
+# {
+#    "verificationId": "fd162124-5db0-4c4e-9ad5-715638d6594c",
+#   "otp": "801066",
+#   "isOtp": true
+# }
 
 
 ###  verifiy account
