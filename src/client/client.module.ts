@@ -5,13 +5,21 @@ import { ClientController } from './controllers/client.controller';
 import { ClientService } from './services/client.service';
 import { UserModule } from 'src/shared/user.module';
 import { AccountVerification } from './entities/account-verification.entity';
-import { AuthHelper } from 'src/shared/helper/auth.helper';
+import { AuthService } from './services/auth.service';
+import { AuthController } from './controllers/auth.controller';
+import { GoogleStrategy } from 'src/google.strategy';
+import { PassportModule } from '@nestjs/passport';
+
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Client,AccountVerification]), UserModule],
-  controllers: [ClientController],
-  providers: [ClientService],
-  exports: [ClientService],
+  imports: [
+    TypeOrmModule.forFeature([Client, AccountVerification]),
+    UserModule,
+    PassportModule,
+  ],
+  controllers: [ClientController, AuthController],
+  providers: [ClientService, AuthService, GoogleStrategy],
+  exports: [ClientService, AuthService],
 })
 export class ClientModule {}

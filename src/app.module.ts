@@ -7,6 +7,10 @@ import { ClientModule } from './client/client.module';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleStrategy } from './google.strategy';
 import { AuthService } from './client/services/auth.service';
+import { PassportModule } from '@nestjs/passport';
+import { AuthController } from './client/controllers/auth.controller';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -23,7 +27,7 @@ import { AuthService } from './client/services/auth.service';
     UserModule,
     ClientModule,
   ],
-  controllers: [],
-  providers: [GoogleStrategy, AuthService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

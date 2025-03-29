@@ -13,6 +13,9 @@ export class Client extends User {
   @Column({ nullable: true })
   maritalStatus?: string;
 
+  @Column({ nullable: true })
+  googleId?: string;
+
   @OneToMany(
     () => AccountVerification,
     (accountVerification) => accountVerification.client,
