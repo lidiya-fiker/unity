@@ -116,9 +116,6 @@ export class ClientService {
     user.password = this.helper.encodePassword(newPassword);
     await this.repository.save(user);
 
-    // Invalidate the token
-    await this.accountVerificationRepository.delete(verification.id);
-
     // Invalidate the OTP after successful password reset
     await this.accountVerificationRepository.update(
       { id: verification.id },
@@ -369,6 +366,8 @@ export class ClientService {
     otpType: AccountVerificationTypeEnum,
     userId?: string,
   ) {
+    console.log('Creating OTP for:', client.email);
+
     const verificationExists =
       await this.accountVerificationRepository.findOneBy({
         client: { id: client.id },
@@ -385,6 +384,7 @@ export class ClientService {
     }
 
     const otp = this.generateOpt();
+    console.log('Generated OTP:', otp);
 
     const accountVerification: AccountVerification = new AccountVerification();
     accountVerification.client = client;
