@@ -1,75 +1,166 @@
+import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { CreateUserDto, VerifyAccountDto } from '../dto/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
-import { randomBytes, scrypt as _scrypt, randomInt } from 'crypto';
-import { promisify } from 'util';
-import { Client } from '../entities/client.entity';
-import { CreateClientDto, VerifyAccountDto } from '../dto/createClient.dto';
-import { LoginDto } from '../../shared/dtos/login.dto';
-import { AccountStatusEnum } from 'src/shared/enums/account-status.enum';
-import { AccountVerificationTypeEnum } from 'src/shared/enums/account-verification-type.enum';
-import { AccountVerification } from '../entities/account-verification.entity';
-import { AccountVerificationStatusEnum } from 'src/shared/enums';
+import { AccountVerification } from 'src/auth/entity/account-verification.entity';
 
-import * as bcrypt from 'bcrypt';
-import { EmailService } from 'src/shared/email/email.service';
-import { AuthHelper } from 'src/shared/helper/auth.helper';
+import { AuthHelper } from 'src/auth/helper/auth.helper';
+import { User } from 'src/auth/entity/user.entity';
 import {
+  AccountStatusEnum,
+  AccountVerificationStatusEnum,
+  AccountVerificationTypeEnum,
+} from 'src/shared/enums';
+import { randomInt } from 'crypto';
+import * as bcrypt from 'bcrypt';
+import {
+  LoginDto,
   LoginResponseDto,
   ResendOtpDto,
   ResetPasswordDto,
-} from '../dto/login.dto';
-import { User } from 'src/shared/entities/user.entity';
+} from 'src/auth/dto/login.dto';
+import { EmailService } from './email.service';
 
-const scrypt = promisify(_scrypt);
-
-export class ClientService {
+export class UserService {
   constructor(
-    @InjectRepository(Client) private readonly repository: Repository<Client>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
     @InjectRepository(AccountVerification)
     private readonly accountVerificationRepository: Repository<AccountVerification>,
+
     private readonly emailService: EmailService,
     private readonly helper: AuthHelper,
   ) {}
 
   public async createAccount(
-    createClientDto: CreateClientDto,
+    createUserDto: CreateUserDto,
   ): Promise<any | never> {
-    const { email, username } = createClientDto;
+    const { email } = createUserDto;
 
-    if (!email && !username) {
-      throw new BadRequestException('Either email or username is required.');
+    if (!email) {
+      throw new BadRequestException('email is required.');
     }
 
-    let client = await this.repository.findOne({
-      where: [
-        email ? { email: email.toLocaleLowerCase() } : null,
-        username ? { username } : null,
-      ].filter(Boolean),
+    let user = await this.userRepository.findOne({
+      where: [email ? { email: email.toLocaleLowerCase() } : null].filter(
+        Boolean,
+      ),
     });
 
-    if (!client) {
-      client = await this.createNewAccount(
-        createClientDto,
+    if (!user) {
+      user = await this.createNewAccount(
+        createUserDto,
         AccountStatusEnum.PENDING,
       );
 
-      const verificationId = await this.createAndSendVerificationOTP(client);
+      const verificationId = await this.createAndSendVerificationOTP(user);
       return { verificationId };
-    } else if (client.status == AccountStatusEnum.PENDING) {
-      const verificationId = await this.createAndSendVerificationOTP(client);
+    } else if (user.status == AccountStatusEnum.PENDING) {
+      const verificationId = await this.createAndSendVerificationOTP(user);
       return { verificationId };
-    } else if (client.email === createClientDto.email?.toLocaleLowerCase()) {
+    } else if (user.email === createUserDto.email?.toLocaleLowerCase()) {
       throw new BadRequestException('email_already_exists');
     }
 
     throw new BadRequestException('conflict');
   }
 
+  private async createNewAccount(
+    createUserDto: CreateUserDto,
+    status: AccountStatusEnum,
+  ) {
+    const { password } = createUserDto;
+
+    const hashedPassword = this.helper.encodePassword(password);
+
+    const user = this.userRepository.create({
+      ...createUserDto,
+      status: status,
+      password: hashedPassword,
+    });
+
+    await this.userRepository.save(user);
+    return user;
+  }
+
+  private async createAndSendVerificationOTP(user: User) {
+    const { accountVerification, otp } = await this.createOTP(
+      user,
+      AccountVerificationTypeEnum.EMAIL_VERIFICATION,
+    );
+
+    const fullName = `${user.firstName} ${user.lastName}`;
+    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 2);
+
+    let body: string;
+
+    const VERIFICATION_METHOD = process.env.VERIFICATION_METHOD ?? 'OTP';
+
+    if (VERIFICATION_METHOD == 'OTP') {
+      body = this.verifyEmailTemplateForOtp(fullName, otp, OTP_LIFE_TIME);
+    } else {
+      body = `Link: ${accountVerification.otp}`;
+    }
+
+    await this.emailService.sendEmail(user.email, 'Email Verification', body);
+
+    return accountVerification.id;
+  }
+
+  private async createOTP(
+    user: User,
+    otpType: AccountVerificationTypeEnum,
+    userId?: string,
+  ) {
+    console.log('Creating OTP for:', user.email);
+
+    const verificationExists =
+      await this.accountVerificationRepository.findOneBy({
+        user: { id: user.id },
+        status: AccountVerificationStatusEnum.NEW,
+        otpType,
+      });
+
+    if (verificationExists) {
+      verificationExists.status = AccountVerificationStatusEnum.EXPIRED;
+      await this.accountVerificationRepository.update(
+        verificationExists.id,
+        verificationExists,
+      );
+    }
+
+    const otp = this.generateOpt();
+    console.log('Generated OTP:', otp);
+
+    const accountVerification: AccountVerification = new AccountVerification();
+    accountVerification.user = user;
+    accountVerification.otp = this.encodePassword(otp);
+    accountVerification.otpType = otpType;
+    accountVerification.userId = userId;
+    (accountVerification.createdAt = new Date()),
+      await this.accountVerificationRepository.save(accountVerification);
+    return { accountVerification, otp };
+  }
+
+  // Generate OTP
+  public generateOpt(): string {
+    const randomNumber = randomInt(100000, 999999);
+
+    return randomNumber.toString();
+  }
+
+  // Encode User's password
+  public encodePassword(password: string): string {
+    const salt: string = bcrypt.genSaltSync(12);
+
+    return bcrypt.hashSync(password, salt);
+  }
+
   public async forgetPassword(email: string) {
     email = email.toLocaleLowerCase();
 
-    const account: Client = await this.repository.findOneBy({ email });
+    const account: User = await this.userRepository.findOneBy({ email });
     if (!account || account.status != AccountStatusEnum.ACTIVE) {
       throw new HttpException('something_went_wrong', HttpStatus.BAD_REQUEST);
     }
@@ -78,54 +169,7 @@ export class ClientService {
     return { verificationId };
   }
 
-  // public async verifyForgetPassword(body: VerifyAccountDto) {
-  //   const { verificationId, otp, isOtp }: VerifyAccountDto = body;
-  //   await this.verifyOTP(verificationId, otp, isOtp, false);
-  //   return {
-  //     status: true,
-  //   };
-  // }
-
-  async resetPassword({ newPassword, token }: ResetPasswordDto) {
-    // 1️⃣ Find the verification entry
-    const verification = await this.accountVerificationRepository.findOne({
-      where: { otp: token },
-      relations: ['client'],
-    });
-
-    if (!verification) {
-      throw new HttpException(
-        'Invalid or expired token',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (verification.status === AccountVerificationStatusEnum.USED) {
-      throw new HttpException(
-        'This reset link has already been used',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    //  Find the user
-    const user = verification.client;
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    user.password = this.helper.encodePassword(newPassword);
-    await this.repository.save(user);
-
-    // Invalidate the OTP after successful password reset
-    await this.accountVerificationRepository.update(
-      { id: verification.id },
-      { status: AccountVerificationStatusEnum.USED },
-    );
-
-    return { message: 'Password reset successful' };
-  }
-
-  public async createAndSendForgetOTP(account: Client) {
+  public async createAndSendForgetOTP(account: User) {
     const { accountVerification, otp } = await this.createOTP(
       account,
       AccountVerificationTypeEnum.RESET_PASSWORD,
@@ -146,33 +190,43 @@ export class ClientService {
     return accountVerification.id;
   }
 
-  private async createAndSendVerificationOTP(client: Client) {
-    const { accountVerification, otp } = await this.createOTP(
-      client,
-      AccountVerificationTypeEnum.EMAIL_VERIFICATION,
-    );
+  async resetPassword({ newPassword, token }: ResetPasswordDto) {
+    // 1️⃣ Find the verification entry
+    const verification = await this.accountVerificationRepository.findOne({
+      where: { otp: token },
+      relations: ['user'],
+    });
 
-    const fullName = `${client.firstName} ${client.lastName}`;
-    const OTP_LIFE_TIME = Number(process.env.OTP_LIFE_TIME ?? 2);
-
-    let body: string;
-
-    const VERIFICATION_METHOD = process.env.VERIFICATION_METHOD ?? 'OTP';
-
-    if (VERIFICATION_METHOD == 'OTP') {
-      body = this.verifyEmailTemplateForOtp(
-        fullName,
-        client.username,
-        otp,
-        OTP_LIFE_TIME,
+    if (!verification) {
+      throw new HttpException(
+        'Invalid or expired token',
+        HttpStatus.BAD_REQUEST,
       );
-    } else {
-      body = `Link: ${accountVerification.otp}`;
     }
 
-    await this.emailService.sendEmail(client.email, 'Email Verification', body);
+    if (verification.status === AccountVerificationStatusEnum.USED) {
+      throw new HttpException(
+        'This reset link has already been used',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-    return accountVerification.id;
+    //  Find the user
+    const user = verification.user;
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    user.password = this.helper.encodePassword(newPassword);
+    await this.userRepository.save(user);
+
+    // Invalidate the OTP after successful password reset
+    await this.accountVerificationRepository.update(
+      { id: verification.id },
+      { status: AccountVerificationStatusEnum.USED },
+    );
+
+    return { message: 'Password reset successful' };
   }
 
   async resendOtp(payload: ResendOtpDto) {
@@ -181,7 +235,7 @@ export class ClientService {
         id: payload.verificationId,
       },
       relations: {
-        client: true,
+        user: true,
       },
     });
 
@@ -215,28 +269,10 @@ export class ClientService {
 
     // Create and send a new OTP
     const newVerificationId = await this.createAndSendVerificationOTP(
-      invitation.client,
+      invitation.user,
     );
 
     return { verificationId: newVerificationId };
-  }
-
-  private async createNewAccount(
-    createClientDto: CreateClientDto,
-    status: AccountStatusEnum,
-  ) {
-    const { password } = createClientDto;
-
-    const hashedPassword = this.helper.encodePassword(password);
-
-    const client = this.repository.create({
-      ...createClientDto,
-      status: status,
-      password: hashedPassword,
-    });
-
-    await this.repository.save(client);
-    return client;
   }
 
   public async verifyAccount(body: VerifyAccountDto) {
@@ -245,7 +281,7 @@ export class ClientService {
 
     account.status = AccountStatusEnum.ACTIVE;
 
-    await this.repository.update(account.id, account);
+    await this.userRepository.update(account.id, account);
 
     return { message: 'Account successfully verified and activated.' };
   }
@@ -316,8 +352,8 @@ export class ClientService {
       });
     }
 
-    const account = await this.repository.findOneBy({
-      id: accountVerification.clientId,
+    const account = await this.userRepository.findOneBy({
+      id: accountVerification.userId,
     });
     if (!account) {
       throw new HttpException('account_not_found', HttpStatus.NOT_FOUND);
@@ -326,16 +362,14 @@ export class ClientService {
   }
 
   async login(loginDto: LoginDto) {
-    const { email, password, username } = loginDto;
+    const { email, password } = loginDto;
 
-    if (!email && !username) {
+    if (!email) {
       throw new BadRequestException('Either email or phone number is required');
     }
 
-    const user: User = await this.repository.findOne({
-      where: [email ? { email } : null, username ? { username } : null].filter(
-        Boolean,
-      ),
+    const user: User = await this.userRepository.findOne({
+      where: [email ? { email } : null].filter(Boolean),
     });
 
     if (!user || user.status != AccountStatusEnum.ACTIVE) {
@@ -361,58 +395,8 @@ export class ClientService {
     return token;
   }
 
-  private async createOTP(
-    client: Client,
-    otpType: AccountVerificationTypeEnum,
-    userId?: string,
-  ) {
-    console.log('Creating OTP for:', client.email);
-
-    const verificationExists =
-      await this.accountVerificationRepository.findOneBy({
-        client: { id: client.id },
-        status: AccountVerificationStatusEnum.NEW,
-        otpType,
-      });
-
-    if (verificationExists) {
-      verificationExists.status = AccountVerificationStatusEnum.EXPIRED;
-      await this.accountVerificationRepository.update(
-        verificationExists.id,
-        verificationExists,
-      );
-    }
-
-    const otp = this.generateOpt();
-    console.log('Generated OTP:', otp);
-
-    const accountVerification: AccountVerification = new AccountVerification();
-    accountVerification.client = client;
-    accountVerification.otp = this.encodePassword(otp);
-    accountVerification.otpType = otpType;
-    accountVerification.userId = userId;
-    (accountVerification.createdAt = new Date()),
-      await this.accountVerificationRepository.save(accountVerification);
-    return { accountVerification, otp };
-  }
-
-  // Generate OTP
-  public generateOpt(): string {
-    const randomNumber = randomInt(100000, 999999);
-
-    return randomNumber.toString();
-  }
-
-  // Encode User's password
-  public encodePassword(password: string): string {
-    const salt: string = bcrypt.genSaltSync(12);
-
-    return bcrypt.hashSync(password, salt);
-  }
-
   public verifyEmailTemplateForOtp(
     fullName: string,
-    username: string,
     otp: string,
     duration: number,
   ) {
@@ -488,26 +472,7 @@ export class ClientService {
               <span style="font-weight: 600; color: #1f1f1f;">${duration} minutes</span>.
               Do not share this code with others.
             </p>
-            <p
-              style="
-                margin: 0;
-                margin-top: 24px;
-                font-size: 16px;
-                font-weight: 500;
-              "
-            >
-              Your Username
-            </p>
-            <p
-              style="
-                 margin: 0;
-                margin-top: 17px;
-                font-size: 28px;
-                font-weight: 600;
-              "
-            >
-              ${username}
-            </p>
+           
             <p
               style="
                 margin: 0;

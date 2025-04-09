@@ -10,8 +10,7 @@ import {
   AccountVerificationTypeEnum,
 } from '../../shared/enums';
 import { Audit } from 'src/shared/entities/audit.entity';
-
-import { Client } from '../../client/entities/client.entity';
+import { User } from './user.entity';
 @Entity('account_verifications')
 export class AccountVerification extends Audit {
   @PrimaryGeneratedColumn('uuid')
@@ -34,14 +33,9 @@ export class AccountVerification extends Audit {
   })
   public otpType: string;
 
-  @Column({ type: 'uuid' })
-  public clientId: string;
-  
-
-  @ManyToOne(() => Client, (client) => client.accountVerifications)
-  @JoinColumn({ name: 'clientId' })
-  public client: Client;
-
+  @ManyToOne(() => User, (user) => user.accountVerifications)
+  @JoinColumn({ name: 'userId' })
+  public user: User;
 
   @Column({ type: 'text', nullable: true })
   public userId: string;

@@ -5,12 +5,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './shared/user.module';
 import { ClientModule } from './client/client.module';
 import { ConfigModule } from '@nestjs/config';
-import { GoogleStrategy } from './google.strategy';
-import { AuthService } from './client/services/auth.service';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './client/controllers/auth.controller';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -26,6 +23,7 @@ import { AppService } from './app.service';
     }),
     UserModule,
     ClientModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

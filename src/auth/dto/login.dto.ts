@@ -1,29 +1,9 @@
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class LoginResponseDto {
   public access_token: string;
   public refresh_token?: string;
 }
-
-// export class ResetPasswordDto {
-//   @IsNotEmpty()
-//   public verificationId: string;
-
-//   @IsString()
-//   public otp: string;
-
-//   @IsNotEmpty()
-//   public password: string;
-
-//   @IsOptional()
-//   public isOtp?: boolean;
-// }
 
 export class ResetPasswordDto {
   @IsString()
@@ -37,4 +17,9 @@ export class ResetPasswordDto {
 export class ResendOtpDto {
   @IsString()
   public verificationId: string;
+}
+
+export class LoginDto {
+  @IsEmail() email?: string;
+  @IsNotEmpty() password: string;
 }

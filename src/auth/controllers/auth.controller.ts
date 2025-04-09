@@ -1,7 +1,7 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../service/auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { GoogleAuthDto } from '../entities/google-auth.dto';
+import { GoogleAuthDto } from '../dto/google-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,18 +14,16 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
-    const googleProfile = req.user; 
+    const googleProfile = req.user;
 
     const googleAuthDto: GoogleAuthDto = {
       googleId: googleProfile.googleId,
       name: googleProfile.name,
       email: googleProfile.email,
-      picture: googleProfile.picture
+      picture: googleProfile.picture,
     };
 
-
     const client = await this.authService.googleLogin(googleAuthDto);
-
 
     return { message: 'Google login successful', client };
   }

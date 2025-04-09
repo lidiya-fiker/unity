@@ -4,11 +4,9 @@ Content-Type: application/json
 
 {   "firstName":"nati",
     "lastName":"fiker",
-    "username":"nati",
     "email": "asasasawewe1@gmail.com",
     "password": "natnael",
-    "gender":"mail"
-
+    "role":"CLIENT"
 }
 
 ###  verifiy account
@@ -50,18 +48,6 @@ Content-Type: application/json
 {
   "email": "asasasawewe1@gmail.com"
 }
-
-
-
-# ###  verifiy forgetpassword otp
-# POST http://localhost:3000/client/verify-forget-password
-# Content-Type: application/json
-
-# {
-#    "verificationId": "fd162124-5db0-4c4e-9ad5-715638d6594c",
-#   "otp": "801066",
-#   "isOtp": true
-# }
 
 
 ###  verifiy account
