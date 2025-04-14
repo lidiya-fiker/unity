@@ -1,9 +1,13 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Counselor } from "../entities/counselor.entity";
-import { Repository } from "typeorm";
-import { User } from "src/auth/entity/user.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { CompleteCounselorProfileDto } from "../dto/complete-counselor-profile.dto";
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Counselor } from '../entities/counselor.entity';
+import { Repository } from 'typeorm';
+import { User } from 'src/auth/entity/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CompleteCounselorProfileDto } from '../dto/complete-counselor-profile.dto';
 
 @Injectable()
 export class CounselorService {
@@ -46,4 +50,22 @@ export class CounselorService {
 
     return await this.counselorRepository.save(counselor);
   }
+
+  // async getCounselorProfile(userId: string): Promise<any> {
+  //   const counselor = await this.counselorRepository.findOne({
+  //     where: { userId },
+  //     relations: ['user'],
+  //   });
+
+  //   if (!counselor) {
+  //     throw new NotFoundException('Counselor not found');
+  //   }
+
+  //   const avgScore = await this.getAverageScore(userId);
+
+  //   return {
+  //     ...counselor,
+  //     averageScore: avgScore,
+  //   };
+  // }
 }
