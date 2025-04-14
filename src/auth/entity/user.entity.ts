@@ -5,9 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  TableInheritance,
+  OneToOne,
 } from 'typeorm';
 import { AccountStatusEnum } from '../../shared/enums/account-status.enum';
 import { AccountVerification } from './account-verification.entity';
+import { Client } from 'src/client/entities/client.entity';
+import { Counselor } from 'src/counselor/entities/counselor.entity';
 
 @Entity()
 export class User {
@@ -26,20 +30,8 @@ export class User {
   @Column({ unique: true, nullable: true })
   email?: string;
 
-  @Column({ nullable: true })
-  phoneNumber?: string;
-
-  @Column({ nullable: true })
-  addres?: string;
-
-  @Column({ nullable: true })
-  profilePicture?: string;
-
-  @Column({ nullable: true })
-  gender?: string;
-
   @Column({ type: 'enum', enum: ['CLIENT', 'COUNSELOR'] })
-  role: 'CLIENT' | 'COUNSELOR';
+  role?: 'CLIENT' | 'COUNSELOR';
 
   @Column({
     type: 'enum',
@@ -60,6 +52,13 @@ export class User {
     },
   )
   accountVerifications: AccountVerification[];
+
+  @OneToOne(() => Client, (client) => client.user)
+  client?: Client;
+
+  @OneToOne(() => Counselor, (counselor) => counselor.user)
+  counselor?: Counselor;
+
 
   @CreateDateColumn()
   createdAt: Date;

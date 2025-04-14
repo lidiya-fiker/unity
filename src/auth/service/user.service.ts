@@ -1,4 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto, VerifyAccountDto } from '../dto/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -20,6 +25,7 @@ import {
   ResetPasswordDto,
 } from 'src/auth/dto/login.dto';
 import { EmailService } from './email.service';
+import { Client } from 'src/client/entities/client.entity';
 
 export class UserService {
   constructor(
@@ -31,6 +37,9 @@ export class UserService {
 
     private readonly emailService: EmailService,
     private readonly helper: AuthHelper,
+
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
   ) {}
 
   public async createAccount(
@@ -190,7 +199,11 @@ export class UserService {
     return accountVerification.id;
   }
 
-  async resetPassword({ newPassword, token }: ResetPasswordDto) {
+  async resetPassword({
+    newPassword,
+    confirmPassword,
+    token,
+  }: ResetPasswordDto) {
     // 1️⃣ Find the verification entry
     const verification = await this.accountVerificationRepository.findOne({
       where: { otp: token },
@@ -216,9 +229,13 @@ export class UserService {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('the password does not match ');
+    }
 
     user.password = this.helper.encodePassword(newPassword);
     await this.userRepository.save(user);
+  
 
     // Invalidate the OTP after successful password reset
     await this.accountVerificationRepository.update(

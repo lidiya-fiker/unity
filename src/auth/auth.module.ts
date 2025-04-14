@@ -12,6 +12,7 @@ import { EmailService } from './service/email.service';
 import { AuthHelper } from './helper/auth.helper';
 import { Audit } from 'src/shared/entities/audit.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { ClientModule } from 'src/client/client.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { JwtModule } from '@nestjs/jwt';
       },
     }),
     PassportModule, // Passport Module for authentication strategies
+    ClientModule,
   ],
   controllers: [UserController, AuthController],
   providers: [
@@ -34,4 +36,4 @@ import { JwtModule } from '@nestjs/jwt';
   ],
   exports: [UserService, AuthService, AuthHelper],
 })
-export class AuthModule {} 
+export class AuthModule {}

@@ -8,7 +8,7 @@ import {
 } from 'src/auth/dto/login.dto';
 import { UserService } from '../service/user.service';
 
-@Controller('client')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

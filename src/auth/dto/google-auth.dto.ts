@@ -1,5 +1,5 @@
 // src/auth/dto/google-auth.dto.ts
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsEnum } from 'class-validator';
 
 export class GoogleAuthDto {
   @IsString()
@@ -14,4 +14,7 @@ export class GoogleAuthDto {
   @IsOptional()
   @IsString()
   picture?: string;
+
+  @IsEnum(['CLIENT', 'COUNSELOR'])
+  role: 'CLIENT' | 'COUNSELOR';
 }

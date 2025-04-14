@@ -1,5 +1,5 @@
 ### Create a new user
-POST http://localhost:3000/client/signup
+POST http://localhost:3000/user/signup
 Content-Type: application/json
 
 {   "firstName":"nati",
@@ -9,8 +9,57 @@ Content-Type: application/json
     "role":"CLIENT"
 }
 
+### update counselor profile
+PATCH http://localhost:3000/counselors/complete-profile
+Content-Type: application/json
+
+{
+  "userId":"d8124a8f-936f-4066-97e8-29b9d301a6ee",
+  "phoneNumber": "123-456-7890",
+  "addres": "123 Counselor St, Cityville",
+  "profilePicture": "http://example.com/profile.jpg",
+  "gender": "Male",
+  "specialization": "Therapist",
+  "cerificate": ["Cert 1", "Cert 2"],
+  "bio": "Experienced counselor with over 10 years of practice.",
+  "languagesSpoken": ["English", "Spanish"],
+  "preferredPaymentMethod": "Bank Transfer",
+  "bankAccountOrPhone": "1234567890"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### update client profile
+PATCH http://localhost:3000/client/complete-profile
+Content-Type: application/json
+
+{
+  "userId":"55a5bdf9-2416-4271-8a70-9467e2e6a701",
+  "phoneNumber": "+1234567890",
+  "addres": "123 Main Street, New York, NY",
+  "profilePicture": "https://example.com/images/user123.jpg",
+  "gender": "female",
+  "maritalStatus": "single",
+  "dateOfBirth": "1995-06-15"
+}
+
+
 ###  verifiy account
-POST http://localhost:3000/client/verifyAccount
+POST http://localhost:3000/user/verifyAccount
 Content-Type: application/json
 
 {
@@ -21,7 +70,7 @@ Content-Type: application/json
 
 
 ###  resend otp
-POST http://localhost:3000/client/resend-otp
+POST http://localhost:3000/user/resend-otp
 Content-Type: application/json
 
 {
@@ -31,7 +80,7 @@ Content-Type: application/json
 
 
 ### Sign in as an existing user 
-POST http://localhost:3000/client/signin
+POST http://localhost:3000/user/signin
 Content-Type: application/json
 
 {
@@ -42,7 +91,7 @@ Content-Type: application/json
 
 
 ### Sign in as an existing user 
-POST http://localhost:3000/client/forget-password
+POST http://localhost:3000/user/forget-password
 Content-Type: application/json
 
 {
@@ -51,7 +100,7 @@ Content-Type: application/json
 
 
 ###  verifiy account
-POST http://localhost:3000/client/reset-password
+POST http://localhost:3000/user/reset-password
 Content-Type: application/json
 
 {
@@ -64,7 +113,7 @@ Content-Type: application/json
 
 
 ###  verifiy account
-POST http://localhost:3000/client/set-password
+POST http://localhost:3000/user/set-password
 Content-Type: application/json
 
 {

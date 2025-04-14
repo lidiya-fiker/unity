@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,7 +13,7 @@ export class AuthService {
   ) {}
 
   async googleLogin(googleAuthDto: GoogleAuthDto): Promise<User> {
-    const { googleId, name, email, picture } = googleAuthDto;
+    const { googleId, name, email, picture, role } = googleAuthDto;
 
     const [firstName, ...lastNameParts] = name.split(' ');
     const lastName = lastNameParts.join(' ');
@@ -31,8 +30,8 @@ export class AuthService {
       user.firstName = firstName;
       user.lastName = lastName;
       user.email = email;
-      user.profilePicture = picture;
       user.status = 'ACTIVE';
+      user.role = role;
 
       // Save the new user to the database
       await this.userRepository.save(user);
