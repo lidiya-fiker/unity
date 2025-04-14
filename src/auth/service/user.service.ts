@@ -26,6 +26,7 @@ import {
 } from 'src/auth/dto/login.dto';
 import { EmailService } from './email.service';
 import { Client } from 'src/client/entities/client.entity';
+import { Counselor } from 'src/counselor/entities/counselor.entity';
 
 export class UserService {
   constructor(
@@ -40,6 +41,9 @@ export class UserService {
 
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+
+    @InjectRepository(Counselor)
+    private readonly counselorRepository: Repository<Counselor>,
   ) {}
 
   public async createAccount(
@@ -79,7 +83,7 @@ export class UserService {
     createUserDto: CreateUserDto,
     status: AccountStatusEnum,
   ) {
-    const { password } = createUserDto;
+    const { password, role } = createUserDto;
 
     const hashedPassword = this.helper.encodePassword(password);
 
@@ -89,7 +93,21 @@ export class UserService {
       password: hashedPassword,
     });
 
-    await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+
+    // Create related profile based on role
+    if (role === 'CLIENT') {
+      const client = this.clientRepository.create({
+        userId: savedUser.id,
+      });
+      await this.clientRepository.save(client);
+    } else if (role === 'COUNSELOR') {
+      const counselor = this.counselorRepository.create({
+        userId: savedUser.id,
+      });
+      await this.counselorRepository.save(counselor);
+    }
+
     return user;
   }
 
@@ -235,7 +253,6 @@ export class UserService {
 
     user.password = this.helper.encodePassword(newPassword);
     await this.userRepository.save(user);
-  
 
     // Invalidate the OTP after successful password reset
     await this.accountVerificationRepository.update(

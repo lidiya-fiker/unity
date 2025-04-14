@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RatingService } from '../service/rating.service';
 import { CreateRatingDto } from '../dto/rating.dto';
-import { get } from 'http';
 
 @Controller('ratings')
 export class RatingController {

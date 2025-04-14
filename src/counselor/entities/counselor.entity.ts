@@ -1,10 +1,18 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../auth/entity/user.entity';
 import { PreferredPaymentMethod } from 'src/shared/enums';
+import { Rating } from './rating.entity';
 
 @Entity()
 export class Counselor {
-  @Column({ primary: true })
+  @PrimaryGeneratedColumn('uuid')
   userId: string;
 
   @OneToOne(() => User, (user) => user.counselor, {
@@ -49,4 +57,7 @@ export class Counselor {
 
   @Column({ type: 'timestamp', nullable: true })
   approvedAt?: Date;
+
+  @OneToMany(() => Rating, (rating) => rating.counselor)
+  ratings: Rating;
 }

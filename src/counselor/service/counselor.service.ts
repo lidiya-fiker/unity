@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompleteCounselorProfileDto } from '../dto/complete-counselor-profile.dto';
+import { RatingService } from './rating.service';
 
 @Injectable()
 export class CounselorService {
@@ -17,6 +18,8 @@ export class CounselorService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly ratingService: RatingService,
   ) {}
 
   async completeProfile(dto: CompleteCounselorProfileDto): Promise<Counselor> {
@@ -51,21 +54,21 @@ export class CounselorService {
     return await this.counselorRepository.save(counselor);
   }
 
-  // async getCounselorProfile(userId: string): Promise<any> {
-  //   const counselor = await this.counselorRepository.findOne({
-  //     where: { userId },
-  //     relations: ['user'],
-  //   });
+  async getCounselorProfile(userId: string): Promise<any> {
+    const counselor = await this.counselorRepository.findOne({
+      where: { userId },
+    });
 
-  //   if (!counselor) {
-  //     throw new NotFoundException('Counselor not found');
-  //   }
+    if (!counselor) {
+      throw new NotFoundException('Counselor not found');
+    }
 
-  //   const avgScore = await this.getAverageScore(userId);
+    const avgScore = await this.ratingService.getAverageScore(userId);
+    const roundedAvg = Math.round(avgScore * 10) / 10;
 
-  //   return {
-  //     ...counselor,
-  //     averageScore: avgScore,
-  //   };
-  // }
+    return {
+      ...counselor,
+      averageScore: roundedAvg,
+    };
+  }
 }

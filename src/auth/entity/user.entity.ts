@@ -15,7 +15,7 @@ import { Counselor } from 'src/counselor/entities/counselor.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid') // Ensure it's UUID if you want consistency
   id!: string;
 
   @Column()
@@ -59,10 +59,11 @@ export class User {
   @OneToOne(() => Counselor, (counselor) => counselor.user)
   counselor?: Counselor;
 
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  
 }

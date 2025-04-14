@@ -14,7 +14,7 @@ PATCH http://localhost:3000/counselors/complete-profile
 Content-Type: application/json
 
 {
-  "userId":"d8124a8f-936f-4066-97e8-29b9d301a6ee",
+  "userId":"b04d56b7-bc30-4280-a287-d754156a0ee2",
   "phoneNumber": "123-456-7890",
   "addres": "123 Counselor St, Cityville",
   "profilePicture": "http://example.com/profile.jpg",
@@ -27,6 +27,46 @@ Content-Type: application/json
   "bankAccountOrPhone": "1234567890"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+### update client profile
+PATCH http://localhost:3000/client/complete-profile
+Content-Type: application/json
+
+{
+  "userId": "19d18d67-c02f-4428-bd8a-3470328e94ef",
+  "phoneNumber": "+1234567890",
+  "addres": "123 Main Street, Cityville",
+  "profilePicture": "https://example.com/profile.jpg",
+  "gender": "Female",
+  "maritalStatus": "Single",
+  "dateOfBirth": "1995-06-15"
+}
+
+### rating counselor
+POST http://localhost:3000/ratings
+Content-Type: application/json
+
+{
+  "clientId": "19d18d67-c02f-4428-bd8a-3470328e94ef",
+  "counselorId": "b04d56b7-bc30-4280-a287-d754156a0ee2",
+  "score": 5,
+  "feedback": "good session!"
+}
+
+### see counselors rating in profile
+GET http://localhost:3000/counselors/profile/b04d56b7-bc30-4280-a287-d754156a0ee2
 
 
 

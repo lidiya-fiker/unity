@@ -3,6 +3,7 @@ import { User } from './auth/entity/user.entity';
 import { Client } from './client/entities/client.entity';
 import { AccountVerification } from './auth/entity/account-verification.entity';
 import { Counselor } from './counselor/entities/counselor.entity';
+import { Rating } from './counselor/entities/rating.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -10,10 +11,10 @@ export const dataSourceOptions: DataSourceOptions = {
   port: 5433,
   username: 'postgres',
   password: 'kidiya',
-  database: 'unityConsultancyy',
+  database: 'unityCounsultancyy',
   synchronize: true,
   logging: true,
-  entities: [User, Client, AccountVerification,Counselor],
+  entities: [User, Client, AccountVerification, Counselor, Rating],
   migrations: [],
 };
 

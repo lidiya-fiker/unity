@@ -12,7 +12,6 @@ export class CreateRatingDto {
   @Max(5)
   score: number;
 
-  @IsOptional()
   @IsString()
   feedback: string;
 }

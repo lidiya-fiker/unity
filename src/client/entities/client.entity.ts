@@ -1,10 +1,18 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../auth/entity/user.entity';
 import { Gender, MaritalStatus } from 'src/shared/enums';
+import { Rating } from 'src/counselor/entities/rating.entity';
 
 @Entity()
 export class Client {
-  @Column({ primary: true })
+  @PrimaryGeneratedColumn('uuid')
   userId: string;
 
   @Column({ nullable: true })
@@ -31,4 +39,7 @@ export class Client {
   })
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Rating, (rating) => rating.client)
+  ratings: Rating;
 }

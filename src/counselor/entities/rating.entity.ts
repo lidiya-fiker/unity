@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -13,11 +14,17 @@ export class Rating {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Client, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Client, (client) => client.ratings, { onDelete: 'CASCADE' })
   client: Client;
 
-  @ManyToOne(() => Counselor, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Counselor, (counselor) => counselor.ratings, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'counselorId' })
   counselor: Counselor;
+
+  @Column({ nullable: true })
+  counselorId?: string;
 
   @Column({ type: 'text', nullable: true })
   feedback?: string;
