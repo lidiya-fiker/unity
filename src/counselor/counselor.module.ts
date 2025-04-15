@@ -10,13 +10,15 @@ import { RatingController } from './controllers/rating.controller';
 import { Rating } from './entities/rating.entity';
 import { Client } from 'src/client/entities/client.entity';
 import { Article } from './entities/article.entity';
+import { ArticleService } from './service/article.service';
+import { ArticleController } from './controllers/article.controller';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Counselor, Rating, Client, Article]),
     UserModule,
   ],
-  controllers: [CounselorController, RatingController],
-  providers: [CounselorService, RatingService],
+  controllers: [CounselorController, RatingController,ArticleController],
+  providers: [CounselorService, RatingService,ArticleService],
   exports: [TypeOrmModule],
 })
 export class CounselorModule {}

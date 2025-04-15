@@ -30,12 +30,8 @@ Content-Type: application/json
 ###approved counselor
 PATCH http://localhost:3000/counselors/b04d56b7-bc30-4280-a287-d754156a0ee2/approve
 
-
-
 ###get all counselor
 GET http://localhost:3000/counselors
-
-
 
 
 ### update client profile
@@ -65,20 +61,6 @@ Content-Type: application/json
 
 ### see counselors rating in profile
 GET http://localhost:3000/counselors/profile/b04d56b7-bc30-4280-a287-d754156a0ee2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### update client profile
@@ -163,3 +145,34 @@ Content-Type: application/json
 
 
 
+###Post article
+POST http://localhost:3000/articles/b04d56b7-bc30-4280-a287-d754156a0ee2
+Content-Type: application/json
+
+{
+  "title": " new The Power of Counseling",
+  "description": " new An in-depth article about the importance of counseling in personal growth and development."
+}
+
+
+###get all articles 
+GET http://localhost:3000/articles
+
+
+###get specific article 
+
+GET http://localhost:3000/articles/bb3efa36-558f-45e8-8b13-bd1120e4138f
+
+###update an article 
+
+PATCH http://localhost:3000/articles/fd7f58d4-8a0a-4488-a40d-047348c1b41b
+Content-Type: application/json
+
+{
+  "title": "The Ultimate Guide to Counseling",
+  "description": "A comprehensive guide to understanding and seeking counseling services for personal well-being."
+}
+
+###delete an article 
+
+DELETE http://localhost:3000/articles/fd7f58d4-8a0a-4488-a40d-047348c1b41b
