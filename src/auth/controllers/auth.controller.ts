@@ -9,6 +9,7 @@ import {
 import { AuthService } from '../service/auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleAuthDto } from '../dto/google-auth.dto';
+import { Role } from '../enum/role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -31,7 +32,7 @@ export class AuthController {
       name: googleProfile.name,
       email: googleProfile.email,
       picture: googleProfile.picture,
-      role: role as 'CLIENT' | 'COUNSELOR',
+      role: role as Role,
     };
 
     const client = await this.authService.googleLogin(googleAuthDto);

@@ -13,7 +13,7 @@ export class AuthService {
   ) {}
 
   async googleLogin(googleAuthDto: GoogleAuthDto): Promise<User> {
-    const { googleId, name, email, picture, role } = googleAuthDto;
+    const { googleId, name, email, role } = googleAuthDto;
 
     const [firstName, ...lastNameParts] = name.split(' ');
     const lastName = lastNameParts.join(' ');

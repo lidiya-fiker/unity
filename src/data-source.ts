@@ -4,6 +4,7 @@ import { Client } from './client/entities/client.entity';
 import { AccountVerification } from './auth/entity/account-verification.entity';
 import { Counselor } from './counselor/entities/counselor.entity';
 import { Rating } from './counselor/entities/rating.entity';
+import { Article } from './counselor/entities/article.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -14,7 +15,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: 'unityCounsultancyy',
   synchronize: true,
   logging: true,
-  entities: [User, Client, AccountVerification, Counselor, Rating],
+  entities: [User, Client, AccountVerification, Counselor, Rating, Article],
   migrations: [],
 };
 

@@ -9,8 +9,12 @@ import { RatingService } from './service/rating.service';
 import { RatingController } from './controllers/rating.controller';
 import { Rating } from './entities/rating.entity';
 import { Client } from 'src/client/entities/client.entity';
+import { Article } from './entities/article.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Counselor,Rating,Client]), UserModule,],
+  imports: [
+    TypeOrmModule.forFeature([Counselor, Rating, Client, Article]),
+    UserModule,
+  ],
   controllers: [CounselorController, RatingController],
   providers: [CounselorService, RatingService],
   exports: [TypeOrmModule],

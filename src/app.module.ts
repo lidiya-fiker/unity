@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CounselorModule } from './counselor/counselor.module';
+import { SeederService } from './seeder/seeder.service';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import { CounselorModule } from './counselor/counselor.module';
     CounselorModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeederService],
 })
 export class AppModule {}

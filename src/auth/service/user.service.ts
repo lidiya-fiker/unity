@@ -27,6 +27,7 @@ import {
 import { EmailService } from './email.service';
 import { Client } from 'src/client/entities/client.entity';
 import { Counselor } from 'src/counselor/entities/counselor.entity';
+import { Role } from '../enum/role.enum';
 
 export class UserService {
   constructor(
@@ -96,12 +97,12 @@ export class UserService {
     const savedUser = await this.userRepository.save(user);
 
     // Create related profile based on role
-    if (role === 'CLIENT') {
+    if (role === Role.CLIENT) {
       const client = this.clientRepository.create({
         userId: savedUser.id,
       });
       await this.clientRepository.save(client);
-    } else if (role === 'COUNSELOR') {
+    } else if (role === Role.COUNSELOR) {
       const counselor = this.counselorRepository.create({
         userId: savedUser.id,
       });

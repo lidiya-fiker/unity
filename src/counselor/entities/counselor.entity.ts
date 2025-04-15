@@ -9,6 +9,7 @@ import {
 import { User } from '../../auth/entity/user.entity';
 import { PreferredPaymentMethod } from 'src/shared/enums';
 import { Rating } from './rating.entity';
+import { Article } from './article.entity';
 
 @Entity()
 export class Counselor {
@@ -60,4 +61,9 @@ export class Counselor {
 
   @OneToMany(() => Rating, (rating) => rating.counselor)
   ratings: Rating;
+
+  @OneToMany(() => Article, (article) => article.counselor, {
+    onDelete: 'CASCADE',
+  })
+  article: Article;
 }

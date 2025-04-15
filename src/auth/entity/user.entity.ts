@@ -12,6 +12,7 @@ import { AccountStatusEnum } from '../../shared/enums/account-status.enum';
 import { AccountVerification } from './account-verification.entity';
 import { Client } from 'src/client/entities/client.entity';
 import { Counselor } from 'src/counselor/entities/counselor.entity';
+import { Role } from '../enum/role.enum';
 
 @Entity()
 export class User {
@@ -30,8 +31,11 @@ export class User {
   @Column({ unique: true, nullable: true })
   email?: string;
 
-  @Column({ type: 'enum', enum: ['CLIENT', 'COUNSELOR'] })
-  role?: 'CLIENT' | 'COUNSELOR';
+  @Column({
+    type: 'enum',
+    enum: Role,
+  })
+  role?: Role;
 
   @Column({
     type: 'enum',
@@ -64,6 +68,4 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  
 }
