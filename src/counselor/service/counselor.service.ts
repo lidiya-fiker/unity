@@ -71,4 +71,26 @@ export class CounselorService {
       averageScore: roundedAvg,
     };
   }
+
+  async approveCounselor(userId: string): Promise<Counselor> {
+    const counselor = await this.counselorRepository.findOne({
+      where: {
+        userId: userId,
+      },
+    });
+
+    if (!counselor) {
+      throw new NotFoundException('counselor not found ');
+    }
+    counselor.isApproved = true;
+    counselor.approvedAt = new Date();
+
+    return this.counselorRepository.save(counselor);
+  }
+
+  async findAll(): Promise<Counselor[]> {
+    return this.counselorRepository.find({
+      relations: ['user', 'ratings', 'articles'],
+    });
+  }
 }

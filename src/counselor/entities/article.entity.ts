@@ -12,7 +12,7 @@ export class Article {
   @Column()
   description: string;
 
-  @ManyToOne(() => Counselor, (counselor) => counselor.article, {
+  @ManyToOne(() => Counselor, (counselor) => counselor.articles, {
     onDelete: 'CASCADE',
   })
   counselor: Counselor;

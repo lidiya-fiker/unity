@@ -65,5 +65,5 @@ export class Counselor {
   @OneToMany(() => Article, (article) => article.counselor, {
     onDelete: 'CASCADE',
   })
-  article: Article;
+  articles: Article;
 }

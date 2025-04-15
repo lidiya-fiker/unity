@@ -27,15 +27,13 @@ Content-Type: application/json
   "bankAccountOrPhone": "1234567890"
 }
 
+###approved counselor
+PATCH http://localhost:3000/counselors/b04d56b7-bc30-4280-a287-d754156a0ee2/approve
 
 
 
-
-
-
-
-
-
+###get all counselor
+GET http://localhost:3000/counselors
 
 
 
