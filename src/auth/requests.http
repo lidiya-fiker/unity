@@ -34,6 +34,17 @@ PATCH http://localhost:3000/counselors/b04d56b7-bc30-4280-a287-d754156a0ee2/appr
 GET http://localhost:3000/counselors
 
 
+###create availability
+POST http://localhost:3000/availability/b04d56b7-bc30-4280-a287-d754156a0ee2
+Content-Type: application/json
+
+{
+  "date": "2025-04-16",
+  "fromTime": "08:00",
+  "toTime": "09:00"
+}
+
+
 ### update client profile
 PATCH http://localhost:3000/client/complete-profile
 Content-Type: application/json
@@ -176,3 +187,7 @@ Content-Type: application/json
 ###delete an article 
 
 DELETE http://localhost:3000/articles/fd7f58d4-8a0a-4488-a40d-047348c1b41b
+
+
+
+# b04d56b7-bc30-4280-a287-d754156a0ee2

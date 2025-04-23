@@ -6,8 +6,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from '../entities/client.entity';
-import { CompleteClientProfileDto } from '../dto/complete-client-profile.dto';
+
 import { User } from '../../auth/entity/user.entity';
+import { CompleteClientProfileDto } from '../dto/complete-client-profile.dto';
 
 @Injectable()
 export class ClientService {

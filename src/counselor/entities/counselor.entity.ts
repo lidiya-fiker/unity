@@ -10,6 +10,9 @@ import { User } from '../../auth/entity/user.entity';
 import { PreferredPaymentMethod } from 'src/shared/enums';
 import { Rating } from './rating.entity';
 import { Article } from './article.entity';
+import { Availability } from './availability.entity';
+import { Booking } from 'src/client/entities/booking.entity';
+
 
 @Entity()
 export class Counselor {
@@ -66,4 +69,10 @@ export class Counselor {
     onDelete: 'CASCADE',
   })
   articles: Article;
+
+  @OneToMany(() => Availability, (a) => a.counselor)
+  availabilities: Availability[];
+
+  @OneToMany(() => Booking, (booking) => booking.counselor)
+  bookings: Booking[];
 }
