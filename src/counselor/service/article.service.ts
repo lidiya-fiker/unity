@@ -31,9 +31,15 @@ export class ArticleService {
     return this.articleRepository.save(article);
   }
 
+  // async findAll(): Promise<Article[]> {
+  //   return await this.articleRepository.find();
+  // }
+  
   async findAll(): Promise<Article[]> {
-    return await this.articleRepository.find();
-  }
+  return await this.articleRepository.find({
+    relations: ['counselor', 'counselor.user'], // Includes counselor info and their user profile
+  });
+}
 
   async findOne(id: string): Promise<Article> {
     const article = await this.articleRepository.findOne({
