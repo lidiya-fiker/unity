@@ -33,7 +33,7 @@ export class CounselorService {
 
     if (user.role !== 'COUNSELOR') {
       throw new ForbiddenException(
-        'Only counselors can complete a counselors profile',
+        'Only counselors can complete a counselor profile',
       );
     }
 
@@ -44,8 +44,8 @@ export class CounselorService {
 
     if (!counselor) {
       counselor = this.counselorRepository.create({
-        ...user,
         ...dto,
+        user: user,
       });
     } else {
       this.counselorRepository.merge(counselor, dto);
@@ -57,6 +57,7 @@ export class CounselorService {
   async getCounselorProfile(userId: string): Promise<any> {
     const counselor = await this.counselorRepository.findOne({
       where: { userId },
+      relations: ['user'],
     });
 
     if (!counselor) {
@@ -74,14 +75,13 @@ export class CounselorService {
 
   async approveCounselor(userId: string): Promise<Counselor> {
     const counselor = await this.counselorRepository.findOne({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
     });
 
     if (!counselor) {
-      throw new NotFoundException('counselor not found ');
+      throw new NotFoundException('Counselor not found');
     }
+
     counselor.isApproved = true;
     counselor.approvedAt = new Date();
 
