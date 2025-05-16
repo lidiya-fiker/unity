@@ -106,7 +106,7 @@ Content-Type: application/json
 
 {
 
-  "verificationId": "7b4e9789-3f0a-45cc-8480-f47ad3fc1af4"
+  "verificationId": "5c3577e8-112a-4266-9c50-71530ee87843"
 }
 
 
@@ -115,8 +115,8 @@ POST http://localhost:3000/user/signin
 Content-Type: application/json
 
 {
-    "email": "asasasawewe1@gmail.com",
-    "password": "newtest",
+    "email": "lidiyafiker09@gmail.com",
+    "password": "newlidiya"
 }
 
 
@@ -126,7 +126,7 @@ POST http://localhost:3000/user/forget-password
 Content-Type: application/json
 
 {
-  "email": "asasasawewe1@gmail.com"
+  "email": "lidiyafiker09@gmail.com"
 }
 
 
