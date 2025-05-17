@@ -25,7 +25,7 @@ import { CounselorModule } from 'src/counselor/counselor.module';
         expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES, // JWT expiration time
       },
     }),
-    PassportModule,// Passport Module for authentication strategies
+    PassportModule.register({ session: true }),
     ClientModule,
     CounselorModule,
   ],

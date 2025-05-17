@@ -207,9 +207,9 @@ export class UserService {
 
     // Construct a clickable reset password link
     const FRONTEND_BASE_URL =
-      process.env.FRONTEND_BASE_URL ?? 'http://localhost:3001';
+      process.env.FRONTEND_BASE_URL ?? 'http://localhost:8080';
 
-    const resetLink = `${FRONTEND_BASE_URL}/reset-password?token=${accountVerification.otp}`;
+    const resetLink = `${FRONTEND_BASE_URL}/reset-form?token=${accountVerification.otp}`;
 
     const body = `Click the link to reset your password: <a href="${resetLink}">${resetLink}</a>`;
 
@@ -318,7 +318,10 @@ export class UserService {
 
     await this.userRepository.update(account.id, account);
 
-    return { message: 'Account successfully verified and activated.' };
+    return {
+      message: 'Account successfully verified and activated.',
+      role: account.role,
+    };
   }
 
   private async verifyOTP(
@@ -427,7 +430,10 @@ export class UserService {
         id: user.id,
       }),
     };
-    return token;
+    return {
+      token,
+      role: user.role,
+    };
   }
 
   public verifyEmailTemplateForOtp(
