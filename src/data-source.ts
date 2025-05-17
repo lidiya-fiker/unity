@@ -1,3 +1,4 @@
+import 'dotenv/config'; // this loads .env variables globally
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { User } from './auth/entity/user.entity';
 import { Client } from './client/entities/client.entity';
@@ -10,11 +11,11 @@ import { Booking } from './client/entities/booking.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'samr1493',
-  database: 'unityCounsultancyy',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  username: process.env.DB_USERNAME || 'postgres',
+  password: process.env.DB_PASSWORD || 'password',
+  database: process.env.DB_NAME || 'unityCounsultancyy',
   synchronize: true,
   logging: true,
   entities: [

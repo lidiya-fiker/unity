@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import dotenv from 'dotenv';
+dotenv.config();
 
 async function bootstrap() {
   // const app = await NestFactory.create(AppModule);
@@ -27,6 +29,6 @@ const app = await NestFactory.create<NestExpressApplication>(AppModule);
      app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
-  await app.listen(3001);
+  await app.listen(3000);
 }
 bootstrap();
