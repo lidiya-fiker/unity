@@ -4,15 +4,33 @@ import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
+import * as session from 'express-session';
+import * as passport from 'passport';
+
 async function bootstrap() {
-  // const app = await NestFactory.create(AppModule);
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  // Enable CORS for the frontend
+
   app.enableCors({
     origin: 'http://localhost:8080',
     methods: 'GET,POST,PUT,DELETE', // Adjust allowed methods as needed
     allowedHeaders: 'Content-Type, Authorization', // Adjust allowed headers
   });
+
+  // Use express-session middleware
+  app.use(
+    session({
+      secret: 'kjyblitfgybhjtv87g giuk', // replace with a strong secret in production
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false },
+    }),
+  );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  passport.serializeUser((user, done) => done(null, user));
+  passport.deserializeUser((obj, done) => done(null, obj));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -25,6 +43,6 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
-  await app.listen(3001);
+  await app.listen(3000);
 }
 bootstrap();

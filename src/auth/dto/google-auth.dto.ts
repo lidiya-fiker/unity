@@ -18,4 +18,8 @@ export class GoogleAuthDto {
 
   @IsEnum(Role)
   role: Role;
+
+  @IsOptional()
+  @IsString()
+  accessToken?: string;
 }

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-google-oauth20';
-import { AuthService } from './auth/service/auth.service'; // Assuming you have AuthService for handling authentication
-import { Profile } from 'passport-google-oauth20';
+import { Strategy, Profile } from 'passport-google-oauth20';
+import { AuthService } from './auth/service/auth.service';
+import { Role } from './auth/enum/role.enum';
+import { Request } from 'express';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -12,20 +13,33 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: 'http://localhost:3000/auth/google/callback',
       scope: ['email', 'profile'],
+      passReqToCallback: true,
+      state: true,
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: Profile) {
+  async validate(
+    req: Request,
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile,
+  ) {
     const { emails, id, photos, displayName } = profile;
 
-    const user = {
+    let role = req.session.role as string;
+    if (!role || !Object.values(Role).includes(role as Role)) {
+      role = Role.CLIENT;
+    }
+
+    return {
       googleId: id,
-      email: emails[0].value,
+      email: emails?.[0]?.value ?? '',
       name: displayName,
-      picture: photos[0].value,
+      picture: photos?.[0]?.value ?? null,
       accessToken,
+      role: role as Role,
     };
 
-    return user;
+   
   }
 }

@@ -11,9 +11,9 @@ import { Booking } from './client/entities/booking.entity';
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: 'localhost',
-  port: 5432,
+  port: 5433,
   username: 'postgres',
-  password: 'samr1493',
+  password: 'kidiya',
   database: 'unityCounsultancyy',
   synchronize: true,
   logging: true,
